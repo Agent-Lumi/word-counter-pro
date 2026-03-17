@@ -118,20 +118,145 @@
             border-top: 1px solid #e5e7eb;
         }
         .keyword-section h3 {
-            margin-bottom: 15px;
+            margin-bottom: 20px;
             color: #1f2937;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
-        .keywords {
+        .keyword-section h3 .icon {
+            font-size: 1.2em;
+        }
+        .keyword-density-container {
+            background: #f9fafb;
+            border-radius: 12px;
+            padding: 20px;
+        }
+        .keyword-density-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .keyword-density-header h4 {
+            color: #374151;
+            font-size: 0.95em;
+        }
+        .total-words-badge {
+            background: #667eea;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 500;
+        }
+        .keyword-bar-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+            gap: 12px;
+        }
+        .keyword-bar-item:last-child {
+            margin-bottom: 0;
+        }
+        .keyword-label {
+            min-width: 120px;
+            font-weight: 500;
+            color: #374151;
+            font-size: 0.9em;
+            text-transform: lowercase;
+        }
+        .keyword-bar-wrapper {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .keyword-bar {
+            height: 24px;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            border-radius: 12px;
+            transition: width 0.5s ease-out;
+            position: relative;
+        }
+        .keyword-bar-bg {
+            flex: 1;
+            height: 24px;
+            background: #e5e7eb;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        .keyword-stats {
+            display: flex;
+            gap: 15px;
+            font-size: 0.85em;
+            color: #6b7280;
+            min-width: 100px;
+            justify-content: flex-end;
+        }
+        .keyword-count {
+            font-weight: 600;
+            color: #667eea;
+        }
+        .keyword-percent {
+            font-weight: 500;
+            color: #10b981;
+        }
+        .keywords-list {
             display: flex;
             flex-wrap: wrap;
             gap: 8px;
+            margin-top: 15px;
         }
-        .keyword {
-            background: #f3f4ff;
-            color: #667eea;
+        .keyword-tag {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
             padding: 6px 14px;
             border-radius: 20px;
             font-size: 0.9em;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .keyword-tag .count {
+            background: rgba(255,255,255,0.2);
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 0.8em;
+        }
+        .view-toggle {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .view-btn {
+            padding: 8px 16px;
+            border: 2px solid #e5e7eb;
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9em;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        .view-btn:hover, .view-btn.active {
+            border-color: #667eea;
+            background: #f3f4ff;
+            color: #667eea;
+        }
+        .view-content {
+            display: none;
+        }
+        .view-content.active {
+            display: block;
+        }
+        .no-keywords {
+            text-align: center;
+            color: #6b7280;
+            padding: 30px;
+            font-style: italic;
         }
         .reading-time {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -157,6 +282,8 @@
         @media (max-width: 600px) {
             header h1 { font-size: 1.8em; }
             .results { grid-template-columns: repeat(2, 1fr); }
+            .keyword-label { min-width: 80px; font-size: 0.8em; }
+            .keyword-stats { min-width: 80px; font-size: 0.75em; }
         }
     </style>
 </head>
@@ -206,8 +333,27 @@
             </div>
             
             <div id="keywordSection" class="keyword-section" style="display: none;">
-                <h3>🔑 Top Keywords</h3>
-                <div class="keywords" id="keywords"></div>
+                <h3><span class="icon">📊</span> Keyword Density Analysis</h3>
+                
+                <div class="keyword-density-container">
+                    <div class="keyword-density-header">
+                        <h4>Top 10 Keywords (excluding stop words)</h4>
+                        <span class="total-words-badge" id="totalWordsBadge">0 words</span>
+                    </div>
+                    
+                    <div class="view-toggle">
+                        <button class="view-btn active" onclick="setView('chart')">📊 Bar Chart</button>
+                        <button class="view-btn" onclick="setView('list')">📝 List View</button>
+                    </div>
+                    
+                    <div id="chartView" class="view-content active">
+                        <div id="keywordBars"></div>
+                    </div>
+                    
+                    <div id="listView" class="view-content">
+                        <div class="keywords-list" id="keywordsList"></div>
+                    </div>
+                </div>
             </div>
         </div>
         
@@ -218,6 +364,43 @@
     
     <script>
         let currentMode = 'words';
+        let currentView = 'chart';
+        
+        // Comprehensive list of English stop words
+        const STOP_WORDS = new Set([
+            // Articles
+            'a', 'an', 'the',
+            // Prepositions
+            'about', 'above', 'across', 'after', 'against', 'along', 'among', 'around', 'at', 'before', 
+            'behind', 'below', 'beneath', 'beside', 'between', 'beyond', 'by', 'down', 'during', 
+            'except', 'for', 'from', 'in', 'inside', 'into', 'like', 'near', 'of', 'off', 'on', 
+            'onto', 'out', 'outside', 'over', 'past', 'since', 'through', 'throughout', 'till', 
+            'to', 'toward', 'under', 'underneath', 'until', 'up', 'upon', 'with', 'within', 'without',
+            // Conjunctions
+            'and', 'but', 'or', 'yet', 'so', 'although', 'because', 'since', 'unless', 'while', 
+            'where', 'if', 'than', 'as', 'once', 'till', 'until',
+            // Pronouns
+            'i', 'me', 'my', 'myself', 'we', 'our', 'ours', 'ourselves', 'you', 'your', 'yours', 
+            'yourself', 'yourselves', 'he', 'him', 'his', 'himself', 'she', 'her', 'hers', 
+            'herself', 'it', 'its', 'itself', 'they', 'them', 'their', 'theirs', 'themselves', 
+            'what', 'which', 'who', 'whom', 'whose', 'this', 'that', 'these', 'those',
+            // Auxiliary/Modal Verbs
+            'am', 'is', 'are', 'was', 'were', 'be', 'been', 'being', 'have', 'has', 'had', 'do', 
+            'does', 'did', 'will', 'would', 'shall', 'should', 'may', 'might', 'must', 'can', 
+            'could', 'need', 'dare', 'ought', 'used', 'won', 'wouldn', 'shan', 'shouldn', 'aren', 
+            'wasn', 'weren', 'haven', 'hasn', 'hadn', 'don', 'doesn', 'didn', 'can', 'couldn',
+            // Common Adverbs/Adjectives
+            'just', 'now', 'then', 'here', 'there', 'when', 'where', 'why', 'how', 'all', 'any', 
+            'both', 'each', 'few', 'more', 'most', 'other', 'some', 'such', 'no', 'nor', 'not', 
+            'only', 'own', 'same', 'very', 'too', 'also', 'back', 'still', 'even', 'much', 'many',
+            // Other common words
+            'get', 'got', 'go', 'went', 'going', 'gone', 'make', 'made', 'take', 'took', 'taken',
+            'come', 'came', 'see', 'saw', 'seen', 'know', 'knew', 'known', 'think', 'thought',
+            'say', 'said', 'tell', 'told', 'ask', 'asked', 'work', 'worked', 'try', 'tried',
+            'want', 'wanted', 'use', 'used', 'find', 'found', 'give', 'gave', 'given', 'put',
+            'let', 'lets', 'way', 'ways', 'time', 'times', 'day', 'days', 'year', 'years',
+            'man', 'men', 'woman', 'women', 'people', 'person', 'thing', 'things', 'part', 'parts'
+        ]);
         
         function setMode(mode) {
             currentMode = mode;
@@ -225,6 +408,19 @@
                 btn.classList.remove('active');
             });
             event.target.classList.add('active');
+        }
+        
+        function setView(view) {
+            currentView = view;
+            document.querySelectorAll('.view-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            document.querySelectorAll('.view-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.getElementById(view + 'View').classList.add('active');
         }
         
         function analyzeText() {
@@ -257,45 +453,99 @@
             document.getElementById('readTimeValue').textContent = timeText;
             document.getElementById('readingTime').style.display = 'block';
             
-            // Extract keywords
-            const keywords = extractKeywords(text);
-            displayKeywords(keywords);
+            // Extract and display keyword density
+            const keywordData = extractKeywords(text);
+            displayKeywordDensity(keywordData, words);
         }
         
         function extractKeywords(text) {
-            // Common words to exclude
-            const stopWords = new Set(['the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by', 'is', 'are', 'was', 'were', 'be', 'been', 'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'could', 'should', 'may', 'might', 'must', 'can', 'this', 'that', 'these', 'those', 'i', 'you', 'he', 'she', 'it', 'we', 'they', 'me', 'him', 'her', 'us', 'them']);
-            
+            // Clean and tokenize text
             const words = text.toLowerCase()
-                .replace(/[^a-zA-Z\s]/g, '')
-                .split(/\s+/)
-                .filter(w => w.length > 3 && !stopWords.has(w));
+                .replace(/[^a-zA-Z\s]/g, ' ')  // Replace non-letters with spaces
+                .split(/\s+/)                 // Split on whitespace
+                .filter(word => {
+                    // Filter conditions:
+                    // 1. Must be at least 3 characters
+                    // 2. Must not be a stop word
+                    // 3. Must contain only letters
+                    return word.length >= 3 && 
+                           !STOP_WORDS.has(word) &&
+                           !STOP_WORDS.has(word.replace(/[^a-z]/g, ''));
+                });
             
+            // Count frequency
             const frequency = {};
             words.forEach(word => {
                 frequency[word] = (frequency[word] || 0) + 1;
             });
             
-            return Object.entries(frequency)
+            // Sort by frequency and get top 10
+            const sorted = Object.entries(frequency)
                 .sort((a, b) => b[1] - a[1])
                 .slice(0, 10);
+            
+            return {
+                keywords: sorted,
+                totalFilteredWords: words.length
+            };
         }
         
-        function displayKeywords(keywords) {
-            const container = document.getElementById('keywords');
-            container.innerHTML = '';
+        function displayKeywordDensity(data, totalWords) {
+            const { keywords } = data;
+            
+            // Update total words badge
+            document.getElementById('totalWordsBadge').textContent = 
+                `${totalWords.toLocaleString()} total words`;
+            
+            // Get max count for bar scaling
+            const maxCount = keywords.length > 0 ? keywords[0][1] : 0;
+            
+            // Generate bar chart
+            const barsContainer = document.getElementById('keywordBars');
+            barsContainer.innerHTML = '';
             
             if (keywords.length === 0) {
-                container.innerHTML = '<span class="keyword">No significant keywords found</span>';
+                barsContainer.innerHTML = '<div class="no-keywords">No significant keywords found. Try entering more text.</div>';
             } else {
                 keywords.forEach(([word, count]) => {
-                    const span = document.createElement('span');
-                    span.className = 'keyword';
-                    span.textContent = `${word} (${count})`;
-                    container.appendChild(span);
+                    const percentage = ((count / totalWords) * 100).toFixed(1);
+                    const barWidth = maxCount > 0 ? (count / maxCount) * 100 : 0;
+                    
+                    const barItem = document.createElement('div');
+                    barItem.className = 'keyword-bar-item';
+                    barItem.innerHTML = `
+                        <div class="keyword-label">${word}</div>
+                        <div class="keyword-bar-wrapper">
+                            <div class="keyword-bar-bg">
+                                <div class="keyword-bar" style="width: ${barWidth}%"></div>
+                            </div>
+                        </div>
+                        <div class="keyword-stats">
+                            <span class="keyword-count">${count}</span>
+                            <span class="keyword-percent">${percentage}%</span>
+                        </div>
+                    `;
+                    barsContainer.appendChild(barItem);
                 });
             }
             
+            // Generate list view
+            const listContainer = document.getElementById('keywordsList');
+            listContainer.innerHTML = '';
+            
+            if (keywords.length === 0) {
+                listContainer.innerHTML = '<div class="no-keywords">No significant keywords found. Try entering more text.</div>';
+            } else {
+                keywords.forEach(([word, count]) => {
+                    const percentage = ((count / totalWords) * 100).toFixed(1);
+                    const tag = document.createElement('div');
+                    tag.className = 'keyword-tag';
+                    tag.innerHTML = `${word} <span class="count">${count} (${percentage}%)</span>`;
+                    listContainer.appendChild(tag);
+                });
+            }
+            
+            // Show the section
             document.getElementById('keywordSection').style.display = 'block';
         }
         
