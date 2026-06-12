@@ -18,6 +18,7 @@ A powerful, beautiful word counting tool that goes beyond simple word counts. Ge
 - **⚡ Fast & Lightweight**: No dependencies, 100% client-side processing
 - **🔒 Privacy First**: Your text never leaves your browser — no server uploads
 - **💾 Works Offline**: Use it anywhere, even without internet
+- **🌙 Dark/Light Mode Toggle**: Switch between themes with one click — your preference is saved
 
 ## 🎯 How to Use
 
