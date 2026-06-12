@@ -554,6 +554,113 @@
             setTimeout(analyzeText, 100);
         });
     </script>
+<!-- Dark Mode Feature -->
+<style>
+    /* Dark mode styles */
+    body.dark-mode {
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%) !important;
+    }
+    body.dark-mode .main-card {
+        background: #1e1e2e !important;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.4) !important;
+    }
+    body.dark-mode header h1 {
+        color: #e0e0e0 !important;
+    }
+    body.dark-mode header p {
+        color: #a0a0a0 !important;
+    }
+    body.dark-mode textarea {
+        background: #2a2a3e !important;
+        border-color: #3a3a4e !important;
+        color: #e0e0e0 !important;
+    }
+    body.dark-mode .stat-card {
+        background: #2a2a3e !important;
+        border-color: #3a3a4e !important;
+    }
+    body.dark-mode .stat-card h3 {
+        color: #a0a0a0 !important;
+    }
+    body.dark-mode .stat-card .value {
+        color: #e0e0e0 !important;
+    }
+    body.dark-mode .keyword-item {
+        background: #2a2a3e !important;
+        color: #e0e0e0 !important;
+        border-color: #3a3a4e !important;
+    }
+    body.dark-mode .section-title {
+        color: #e0e0e0 !important;
+    }
+    body.dark-mode .reading-time {
+        background: linear-gradient(135deg, #4a5568 0%, #2d3748 100%) !important;
+        color: #e0e0e0 !important;
+    }
+    body.dark-mode .char-breakdown {
+        background: #2a2a3e !important;
+        border-color: #3a3a4e !important;
+    }
+    body.dark-mode .char-breakdown h3 {
+        color: #a0a0a0 !important;
+    }
+    body.dark-mode .char-breakdown span {
+        color: #e0e0e0 !important;
+    }
+
+    /* Dark mode toggle button */
+    .dark-mode-toggle {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background: white;
+        border: none;
+        font-size: 24px;
+        cursor: pointer;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        transition: all 0.3s ease;
+        z-index: 1000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .dark-mode-toggle:hover {
+        transform: scale(1.1);
+        box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+    }
+    body.dark-mode .dark-mode-toggle {
+        background: #2a2a3e !important;
+    }
+</style>
+
+<button class="dark-mode-toggle" id="darkModeToggle" title="Toggle dark mode">🌙</button>
+
+<script>
+    // Dark mode functionality
+    (function() {
+        const darkModeToggle = document.getElementById('darkModeToggle');
+        const body = document.body;
+
+        // Check saved preference
+        const isDarkMode = localStorage.getItem('darkMode') === 'true';
+        if (isDarkMode) {
+            body.classList.add('dark-mode');
+            darkModeToggle.textContent = '☀️';
+        }
+
+        // Toggle handler
+        darkModeToggle.addEventListener('click', function() {
+            body.classList.toggle('dark-mode');
+            const isNowDark = body.classList.contains('dark-mode');
+            darkModeToggle.textContent = isNowDark ? '☀️' : '🌙';
+            localStorage.setItem('darkMode', isNowDark);
+        });
+    })();
+</script>
+
 </body>
 </html>
 <script>
@@ -1855,4 +1962,20 @@ const API = {
         return response.json();
     }
 };
+</script>
+<script>
+// Share functionality
+const shareBtn = document.createElement('button');
+shareBtn.textContent = '🔗 Share';
+shareBtn.style.cssText = 'position:fixed;bottom:20px;right:20px;padding:10px 20px;background:#6f42c1;color:white;border:none;border-radius:20px;cursor:pointer;';
+shareBtn.onclick = () => {
+    if (navigator.share) {
+        navigator.share({ title: document.title, url: location.href });
+    } else {
+        navigator.clipboard.writeText(location.href);
+        shareBtn.textContent = '✅ Copied!';
+        setTimeout(() => shareBtn.textContent = '🔗 Share', 2000);
+    }
+};
+document.body.appendChild(shareBtn);
 </script>
