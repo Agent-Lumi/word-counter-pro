@@ -1,17 +1,46 @@
 <!DOCTYPE html>
 <html lang="en">
-<head><link rel="manifest" href="manifest.json"><script>if("serviceWorker"in navigator)navigator.serviceWorker.register("sw.js")</script>
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Word Counter Pro - Advanced Text Analysis</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#667eea">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect fill='%23667eea' width='192' height='192' rx='24'/%3E%3Ctext x='96' y='130' font-size='120' text-anchor='middle'%3E📝%3C/text%3E%3C/svg%3E">
+    <script>if("serviceWorker"in navigator)navigator.serviceWorker.register("sw.js")</script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --bg-gradient-start: #667eea;
+            --bg-gradient-end: #764ba2;
+            --card-bg: white;
+            --text-primary: #1f2937;
+            --text-secondary: #6b7280;
+            --border-color: #e5e7eb;
+            --accent-color: #667eea;
+            --stat-bg: #f9fafb;
+            --tag-bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .dark-mode {
+            --bg-gradient-start: #1a1a2e;
+            --bg-gradient-end: #16213e;
+            --card-bg: #1a1a2e;
+            --text-primary: #e4e4e7;
+            --text-secondary: #a1a1aa;
+            --border-color: #333;
+            --accent-color: #8b5cf6;
+            --stat-bg: #252542;
+            --tag-bg: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
+        }
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%);
             min-height: 100vh;
             padding: 20px;
+            transition: background 0.3s ease;
         }
         .container {
             max-width: 900px;
@@ -31,10 +60,54 @@
             font-size: 1.1em;
         }
         .main-card {
-            background: white;
+            background: var(--card-bg);
             border-radius: 16px;
             padding: 30px;
             box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            color: var(--text-primary);
+            transition: background 0.3s ease, color 0.3s ease;
+        }
+        .header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .theme-toggle {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 50%;
+            transition: background 0.2s;
+        }
+        .theme-toggle:hover {
+            background: rgba(0,0,0,0.1);
+        }
+        .dark-mode .theme-toggle:hover {
+            background: rgba(255,255,255,0.1);
+        }
+        .action-bar {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+        .action-btn {
+            padding: 10px 20px;
+            border: 2px solid var(--border-color);
+            background: var(--card-bg);
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+            color: var(--text-primary);
+        }
+        .action-btn:hover {
+            border-color: var(--accent-color);
+            background: rgba(102, 126, 234, 0.1);
+            color: var(--accent-color);
         }
         .input-section {
             margin-bottom: 25px;
@@ -43,16 +116,18 @@
             width: 100%;
             min-height: 200px;
             padding: 15px;
-            border: 2px solid #e5e7eb;
+            border: 2px solid var(--border-color);
             border-radius: 12px;
             font-size: 1em;
             font-family: inherit;
             resize: vertical;
             transition: border-color 0.2s;
+            background: var(--card-bg);
+            color: var(--text-primary);
         }
         textarea:focus {
             outline: none;
-            border-color: #667eea;
+            border-color: var(--accent-color);
         }
         .options {
             display: flex;
@@ -62,22 +137,23 @@
         }
         .option-btn {
             padding: 10px 20px;
-            border: 2px solid #e5e7eb;
-            background: white;
+            border: 2px solid var(--border-color);
+            background: var(--card-bg);
             border-radius: 8px;
             cursor: pointer;
             font-weight: 500;
             transition: all 0.2s;
+            color: var(--text-primary);
         }
         .option-btn:hover, .option-btn.active {
-            border-color: #667eea;
-            background: #f3f4ff;
-            color: #667eea;
+            border-color: var(--accent-color);
+            background: rgba(102, 126, 234, 0.1);
+            color: var(--accent-color);
         }
         .analyze-btn {
             width: 100%;
             padding: 16px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, var(--accent-color) 0%, var(--bg-gradient-end) 100%);
             color: white;
             border: none;
             border-radius: 12px;
@@ -97,29 +173,30 @@
             margin-top: 25px;
         }
         .stat-card {
-            background: #f9fafb;
+            background: var(--stat-bg);
             padding: 20px;
             border-radius: 12px;
             text-align: center;
+            transition: background 0.3s ease;
         }
         .stat-value {
             font-size: 2em;
             font-weight: 700;
-            color: #667eea;
+            color: var(--accent-color);
         }
         .stat-label {
-            color: #6b7280;
+            color: var(--text-secondary);
             font-size: 0.9em;
             margin-top: 5px;
         }
         .keyword-section {
             margin-top: 25px;
             padding-top: 25px;
-            border-top: 1px solid #e5e7eb;
+            border-top: 1px solid var(--border-color);
         }
         .keyword-section h3 {
             margin-bottom: 20px;
-            color: #1f2937;
+            color: var(--text-primary);
             display: flex;
             align-items: center;
             gap: 10px;
@@ -128,7 +205,7 @@
             font-size: 1.2em;
         }
         .keyword-density-container {
-            background: #f9fafb;
+            background: var(--stat-bg);
             border-radius: 12px;
             padding: 20px;
         }
@@ -138,14 +215,14 @@
             align-items: center;
             margin-bottom: 15px;
             padding-bottom: 10px;
-            border-bottom: 1px solid #e5e7eb;
+            border-bottom: 1px solid var(--border-color);
         }
         .keyword-density-header h4 {
-            color: #374151;
+            color: var(--text-secondary);
             font-size: 0.95em;
         }
         .total-words-badge {
-            background: #667eea;
+            background: var(--accent-color);
             color: white;
             padding: 4px 12px;
             border-radius: 20px;
@@ -164,7 +241,7 @@
         .keyword-label {
             min-width: 120px;
             font-weight: 500;
-            color: #374151;
+            color: var(--text-primary);
             font-size: 0.9em;
             text-transform: lowercase;
         }
@@ -176,7 +253,7 @@
         }
         .keyword-bar {
             height: 24px;
-            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(90deg, var(--accent-color) 0%, var(--bg-gradient-end) 100%);
             border-radius: 12px;
             transition: width 0.5s ease-out;
             position: relative;
@@ -184,7 +261,7 @@
         .keyword-bar-bg {
             flex: 1;
             height: 24px;
-            background: #e5e7eb;
+            background: var(--border-color);
             border-radius: 12px;
             overflow: hidden;
         }
@@ -192,13 +269,13 @@
             display: flex;
             gap: 15px;
             font-size: 0.85em;
-            color: #6b7280;
+            color: var(--text-secondary);
             min-width: 100px;
             justify-content: flex-end;
         }
         .keyword-count {
             font-weight: 600;
-            color: #667eea;
+            color: var(--accent-color);
         }
         .keyword-percent {
             font-weight: 500;
@@ -211,7 +288,7 @@
             margin-top: 15px;
         }
         .keyword-tag {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: var(--tag-bg);
             color: white;
             padding: 6px 14px;
             border-radius: 20px;
@@ -233,18 +310,19 @@
         }
         .view-btn {
             padding: 8px 16px;
-            border: 2px solid #e5e7eb;
-            background: white;
+            border: 2px solid var(--border-color);
+            background: var(--card-bg);
             border-radius: 8px;
             cursor: pointer;
             font-size: 0.9em;
             font-weight: 500;
             transition: all 0.2s;
+            color: var(--text-primary);
         }
         .view-btn:hover, .view-btn.active {
-            border-color: #667eea;
-            background: #f3f4ff;
-            color: #667eea;
+            border-color: var(--accent-color);
+            background: rgba(102, 126, 234, 0.1);
+            color: var(--accent-color);
         }
         .view-content {
             display: none;
@@ -254,12 +332,12 @@
         }
         .no-keywords {
             text-align: center;
-            color: #6b7280;
+            color: var(--text-secondary);
             padding: 30px;
             font-style: italic;
         }
         .reading-time {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, var(--accent-color) 0%, var(--bg-gradient-end) 100%);
             color: white;
             padding: 20px;
             border-radius: 12px;
@@ -270,6 +348,19 @@
             font-size: 1.8em;
             font-weight: 700;
         }
+        .shortcuts-hint {
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 0.85em;
+            margin-top: 15px;
+        }
+        .shortcuts-hint kbd {
+            background: var(--stat-bg);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 0.9em;
+        }
         footer {
             text-align: center;
             color: white;
@@ -279,11 +370,106 @@
         footer a {
             color: white;
         }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal.active {
+            display: flex;
+        }
+        .modal-content {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 30px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            color: var(--text-primary);
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .modal-header h3 {
+            margin: 0;
+        }
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--text-secondary);
+        }
+        .shortcuts-grid {
+            display: grid;
+            gap: 10px;
+        }
+        .shortcut-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            background: var(--stat-bg);
+            border-radius: 8px;
+        }
+        .shortcut-key {
+            font-family: monospace;
+            background: var(--accent-color);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-weight: 500;
+            z-index: 10000;
+            animation: slideIn 0.3s ease-out;
+            max-width: 300px;
+            word-wrap: break-word;
+        }
+        .notification-success {
+            background: #10b981;
+            color: white;
+        }
+        .notification-error {
+            background: #ef4444;
+            color: white;
+        }
+        .notification-info {
+            background: var(--accent-color);
+            color: white;
+        }
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes slideOut {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(100%); opacity: 0; }
+        }
         @media (max-width: 600px) {
             header h1 { font-size: 1.8em; }
             .results { grid-template-columns: repeat(2, 1fr); }
             .keyword-label { min-width: 80px; font-size: 0.8em; }
             .keyword-stats { min-width: 80px; font-size: 0.75em; }
+            .action-bar { flex-direction: column; }
+            .action-bar .action-btn { width: 100%; }
         }
     </style>
 </head>
@@ -295,6 +481,11 @@
         </header>
         
         <div class="main-card">
+            <div class="header-row">
+                <span></span>
+                <button class="theme-toggle" id="themeToggle" title="Toggle dark mode" onclick="toggleTheme()">🌙</button>
+            </div>
+            
             <div class="input-section">
                 <textarea id="textInput" placeholder="Paste or type your text here..."></textarea>
             </div>
@@ -306,7 +497,15 @@
                 <button class="option-btn" onclick="setMode('paragraphs')">Paragraphs</button>
             </div>
             
-            <button class="analyze-btn" onclick="analyzeText()">🔍 Analyze Text</button>
+            <button class="analyze-btn" onclick="analyzeText()">🔍 Analyze Text (Ctrl+Enter)</button>
+            
+            <div class="action-bar">
+                <button class="action-btn" onclick="clearText()">🗑️ Clear</button>
+                <button class="action-btn" onclick="copyText()">📋 Copy Text</button>
+                <button class="action-btn" onclick="saveText()">💾 Save</button>
+                <button class="action-btn" onclick="openExportModal()">📤 Export</button>
+                <button class="action-btn" onclick="loadSavedText()">📂 Load Saved</button>
+            </div>
             
             <div id="results" class="results" style="display: none;">
                 <div class="stat-card">
@@ -355,6 +554,10 @@
                     </div>
                 </div>
             </div>
+            
+            <div class="shortcuts-hint">
+                💡 <strong>Keyboard shortcuts:</strong> Press <kbd>?</kbd> for help | <kbd>Ctrl+Enter</kbd> = Analyze | <kbd>Ctrl+S</kbd> = Save | <kbd>Ctrl+D</kbd> = Toggle Theme
+            </div>
         </div>
         
         <footer>
@@ -362,46 +565,346 @@
         </footer>
     </div>
     
+    <!-- Keyboard Shortcuts Modal -->
+    <div id="shortcutsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>⌨️ Keyboard Shortcuts</h3>
+                <button class="close-btn" onclick="closeShortcutsModal()">×</button>
+            </div>
+            <div class="shortcuts-grid">
+                <div class="shortcut-item">
+                    <span>Analyze text</span>
+                    <span class="shortcut-key">Ctrl + Enter</span>
+                </div>
+                <div class="shortcut-item">
+                    <span>Save text</span>
+                    <span class="shortcut-key">Ctrl + S</span>
+                </div>
+                <div class="shortcut-item">
+                    <span>Copy text</span>
+                    <span class="shortcut-key">Ctrl + Shift + C</span>
+                </div>
+                <div class="shortcut-item">
+                    <span>Clear text</span>
+                    <span class="shortcut-key">Ctrl + Shift + X</span>
+                </div>
+                <div class="shortcut-item">
+                    <span>Toggle dark mode</span>
+                    <span class="shortcut-key">Ctrl + D</span>
+                </div>
+                <div class="shortcut-item">
+                    <span>Show shortcuts</span>
+                    <span class="shortcut-key">?</span>
+                </div>
+                <div class="shortcut-item">
+                    <span>Focus text area</span>
+                    <span class="shortcut-key">Tab</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Export Modal -->
+    <div id="exportModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>📤 Export Results</h3>
+                <button class="close-btn" onclick="closeExportModal()">×</button>
+            </div>
+            <div class="action-bar" style="flex-direction: column;">
+                <button class="action-btn" onclick="exportAs('txt')">📄 Text File (.txt)</button>
+                <button class="action-btn" onclick="exportAs('json')">📋 JSON File (.json)</button>
+                <button class="action-btn" onclick="exportAs('csv')">📊 CSV File (.csv)</button>
+                <button class="action-btn" onclick="copyResults()">📋 Copy to Clipboard</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         let currentMode = 'words';
         let currentView = 'chart';
+        let lastAnalysis = null;
         
         // Comprehensive list of English stop words
         const STOP_WORDS = new Set([
-            // Articles
-            'a', 'an', 'the',
-            // Prepositions
-            'about', 'above', 'across', 'after', 'against', 'along', 'among', 'around', 'at', 'before', 
-            'behind', 'below', 'beneath', 'beside', 'between', 'beyond', 'by', 'down', 'during', 
-            'except', 'for', 'from', 'in', 'inside', 'into', 'like', 'near', 'of', 'off', 'on', 
-            'onto', 'out', 'outside', 'over', 'past', 'since', 'through', 'throughout', 'till', 
-            'to', 'toward', 'under', 'underneath', 'until', 'up', 'upon', 'with', 'within', 'without',
-            // Conjunctions
-            'and', 'but', 'or', 'yet', 'so', 'although', 'because', 'since', 'unless', 'while', 
-            'where', 'if', 'than', 'as', 'once', 'till', 'until',
-            // Pronouns
-            'i', 'me', 'my', 'myself', 'we', 'our', 'ours', 'ourselves', 'you', 'your', 'yours', 
-            'yourself', 'yourselves', 'he', 'him', 'his', 'himself', 'she', 'her', 'hers', 
-            'herself', 'it', 'its', 'itself', 'they', 'them', 'their', 'theirs', 'themselves', 
-            'what', 'which', 'who', 'whom', 'whose', 'this', 'that', 'these', 'those',
-            // Auxiliary/Modal Verbs
-            'am', 'is', 'are', 'was', 'were', 'be', 'been', 'being', 'have', 'has', 'had', 'do', 
-            'does', 'did', 'will', 'would', 'shall', 'should', 'may', 'might', 'must', 'can', 
-            'could', 'need', 'dare', 'ought', 'used', 'won', 'wouldn', 'shan', 'shouldn', 'aren', 
-            'wasn', 'weren', 'haven', 'hasn', 'hadn', 'don', 'doesn', 'didn', 'can', 'couldn',
-            // Common Adverbs/Adjectives
-            'just', 'now', 'then', 'here', 'there', 'when', 'where', 'why', 'how', 'all', 'any', 
-            'both', 'each', 'few', 'more', 'most', 'other', 'some', 'such', 'no', 'nor', 'not', 
-            'only', 'own', 'same', 'very', 'too', 'also', 'back', 'still', 'even', 'much', 'many',
-            // Other common words
-            'get', 'got', 'go', 'went', 'going', 'gone', 'make', 'made', 'take', 'took', 'taken',
-            'come', 'came', 'see', 'saw', 'seen', 'know', 'knew', 'known', 'think', 'thought',
-            'say', 'said', 'tell', 'told', 'ask', 'asked', 'work', 'worked', 'try', 'tried',
-            'want', 'wanted', 'use', 'used', 'find', 'found', 'give', 'gave', 'given', 'put',
-            'let', 'lets', 'way', 'ways', 'time', 'times', 'day', 'days', 'year', 'years',
-            'man', 'men', 'woman', 'women', 'people', 'person', 'thing', 'things', 'part', 'parts'
+            'a', 'an', 'the', 'about', 'above', 'across', 'after', 'against', 'along', 'among', 'around', 'at', 'before', 
+            'behind', 'below', 'beneath', 'beside', 'between', 'beyond', 'by', 'down', 'during', 'except', 'for', 
+            'from', 'in', 'inside', 'into', 'like', 'near', 'of', 'off', 'on', 'onto', 'out', 'outside', 'over', 
+            'past', 'since', 'through', 'throughout', 'till', 'to', 'toward', 'under', 'underneath', 'until', 'up', 
+            'upon', 'with', 'within', 'without', 'and', 'but', 'or', 'yet', 'so', 'although', 'because', 'unless', 
+            'while', 'where', 'if', 'than', 'as', 'once', 'i', 'me', 'my', 'myself', 'we', 'our', 'ours', 'ourselves', 
+            'you', 'your', 'yours', 'yourself', 'yourselves', 'he', 'him', 'his', 'himself', 'she', 'her', 'hers', 
+            'herself', 'it', 'its', 'itself', 'they', 'them', 'their', 'theirs', 'themselves', 'what', 'which', 'who', 
+            'whom', 'whose', 'this', 'that', 'these', 'those', 'am', 'is', 'are', 'was', 'were', 'be', 'been', 'being', 
+            'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'shall', 'should', 'may', 'might', 'must', 
+            'can', 'could', 'need', 'dare', 'ought', 'used', 'just', 'now', 'then', 'here', 'there', 'when', 'where', 
+            'why', 'how', 'all', 'any', 'both', 'each', 'few', 'more', 'most', 'other', 'some', 'such', 'no', 'nor', 
+            'not', 'only', 'own', 'same', 'very', 'too', 'also', 'back', 'still', 'even', 'much', 'many', 'get', 'got', 
+            'go', 'went', 'going', 'gone', 'make', 'made', 'take', 'took', 'taken', 'come', 'came', 'see', 'saw', 
+            'seen', 'know', 'knew', 'known', 'think', 'thought', 'say', 'said', 'tell', 'told', 'ask', 'asked', 'work', 
+            'worked', 'try', 'tried', 'want', 'wanted', 'use', 'used', 'find', 'found', 'give', 'gave', 'given', 'put', 
+            'let', 'lets', 'way', 'ways', 'time', 'times', 'day', 'days', 'year', 'years', 'man', 'men', 'woman', 
+            'women', 'people', 'person', 'thing', 'things', 'part', 'parts'
         ]);
         
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            loadTheme();
+            loadSavedText(true);
+            setupKeyboardShortcuts();
+        });
+        
+        // Theme functions
+        function toggleTheme() {
+            document.body.classList.toggle('dark-mode');
+            const isDark = document.body.classList.contains('dark-mode');
+            document.getElementById('themeToggle').textContent = isDark ? '☀️' : '🌙';
+            localStorage.setItem('wordCounterTheme', isDark ? 'dark' : 'light');
+        }
+        
+        function loadTheme() {
+            const savedTheme = localStorage.getItem('wordCounterTheme');
+            if (savedTheme === 'dark') {
+                document.body.classList.add('dark-mode');
+                document.getElementById('themeToggle').textContent = '☀️';
+            }
+        }
+        
+        // Text functions
+        function clearText() {
+            if (confirm('Are you sure you want to clear all text?')) {
+                document.getElementById('textInput').value = '';
+                hideResults();
+                showNotification('Text cleared!', 'info');
+            }
+        }
+        
+        function copyText() {
+            const text = document.getElementById('textInput').value;
+            if (!text) {
+                showNotification('No text to copy!', 'error');
+                return;
+            }
+            navigator.clipboard.writeText(text).then(() => {
+                showNotification('Text copied to clipboard!', 'success');
+            });
+        }
+        
+        function saveText() {
+            const text = document.getElementById('textInput').value;
+            if (!text.trim()) {
+                showNotification('No text to save!', 'error');
+                return;
+            }
+            localStorage.setItem('wordCounterSavedText', text);
+            showNotification('Text saved! 💾', 'success');
+        }
+        
+        function loadSavedText(silent = false) {
+            const saved = localStorage.getItem('wordCounterSavedText');
+            if (saved) {
+                document.getElementById('textInput').value = saved;
+                if (!silent) {
+                    showNotification('Saved text loaded!', 'success');
+                    analyzeText();
+                }
+            } else if (!silent) {
+                showNotification('No saved text found!', 'error');
+            }
+        }
+        
+        // Export functions
+        function openExportModal() {
+            document.getElementById('exportModal').classList.add('active');
+        }
+        
+        function closeExportModal() {
+            document.getElementById('exportModal').classList.remove('active');
+        }
+        
+        function exportAs(format) {
+            if (!lastAnalysis) {
+                showNotification('Please analyze text first!', 'error');
+                return;
+            }
+            
+            const timestamp = new Date().toISOString().split('T')[0];
+            let content, filename, mimeType;
+            
+            switch(format) {
+                case 'txt':
+                    content = generateTextReport();
+                    filename = `word-count-${timestamp}.txt`;
+                    mimeType = 'text/plain';
+                    break;
+                case 'json':
+                    content = JSON.stringify(lastAnalysis, null, 2);
+                    filename = `word-count-${timestamp}.json`;
+                    mimeType = 'application/json';
+                    break;
+                case 'csv':
+                    content = generateCSVReport();
+                    filename = `word-count-${timestamp}.csv`;
+                    mimeType = 'text/csv';
+                    break;
+            }
+            
+            downloadFile(content, filename, mimeType);
+            closeExportModal();
+            showNotification(`Exported as ${format.toUpperCase()}!`, 'success');
+        }
+        
+        function copyResults() {
+            if (!lastAnalysis) {
+                showNotification('Please analyze text first!', 'error');
+                return;
+            }
+            const report = generateTextReport();
+            navigator.clipboard.writeText(report).then(() => {
+                showNotification('Results copied to clipboard!', 'success');
+            });
+            closeExportModal();
+        }
+        
+        function generateTextReport() {
+            if (!lastAnalysis) return '';
+            const { stats, keywords, readingTime } = lastAnalysis;
+            let report = `📊 Word Counter Pro Report\n`;
+            report += `Generated: ${new Date().toLocaleString()}\n\n`;
+            report += `📈 Statistics:\n`;
+            report += `  Words: ${stats.words}\n`;
+            report += `  Characters: ${stats.chars}\n`;
+            report += `  Sentences: ${stats.sentences}\n`;
+            report += `  Paragraphs: ${stats.paragraphs}\n`;
+            report += `  Reading Time: ${readingTime}\n\n`;
+            if (keywords.length > 0) {
+                report += `🔑 Top Keywords:\n`;
+                keywords.forEach(([word, count]) => {
+                    const percent = ((count / stats.words) * 100).toFixed(1);
+                    report += `  ${word}: ${count} (${percent}%)\n`;
+                });
+            }
+            return report;
+        }
+        
+        function generateCSVReport() {
+            if (!lastAnalysis) return '';
+            const { stats, keywords } = lastAnalysis;
+            let csv = 'Metric,Value\n';
+            csv += `Words,${stats.words}\n`;
+            csv += `Characters,${stats.chars}\n`;
+            csv += `Sentences,${stats.sentences}\n`;
+            csv += `Paragraphs,${stats.paragraphs}\n\n`;
+            csv += 'Keyword,Count,Percentage\n';
+            keywords.forEach(([word, count]) => {
+                const percent = ((count / stats.words) * 100).toFixed(1);
+                csv += `${word},${count},${percent}%\n`;
+            });
+            return csv;
+        }
+        
+        function downloadFile(content, filename, mimeType) {
+            const blob = new Blob([content], { type: mimeType });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+        
+        // Modal functions
+        function openShortcutsModal() {
+            document.getElementById('shortcutsModal').classList.add('active');
+        }
+        
+        function closeShortcutsModal() {
+            document.getElementById('shortcutsModal').classList.remove('active');
+        }
+        
+        // Keyboard shortcuts
+        function setupKeyboardShortcuts() {
+            document.addEventListener('keydown', (e) => {
+                // Don't trigger shortcuts when typing in textarea
+                if (e.target.tagName === 'TEXTAREA') {
+                    // Allow Ctrl+Enter in textarea
+                    if (e.key === 'Enter' && e.ctrlKey) {
+                        e.preventDefault();
+                        analyzeText();
+                    }
+                    return;
+                }
+                
+                // Close modals on Escape
+                if (e.key === 'Escape') {
+                    closeShortcutsModal();
+                    closeExportModal();
+                }
+                
+                // Show shortcuts
+                if (e.key === '?') {
+                    openShortcutsModal();
+                }
+                
+                // Ctrl/Cmd shortcuts
+                if (e.ctrlKey || e.metaKey) {
+                    switch(e.key) {
+                        case 's':
+                            e.preventDefault();
+                            saveText();
+                            break;
+                        case 'd':
+                            e.preventDefault();
+                            toggleTheme();
+                            break;
+                        case 'Enter':
+                            e.preventDefault();
+                            analyzeText();
+                            break;
+                    }
+                    
+                    if (e.shiftKey) {
+                        switch(e.key) {
+                            case 'C':
+                                e.preventDefault();
+                                copyText();
+                                break;
+                            case 'X':
+                                e.preventDefault();
+                                clearText();
+                                break;
+                        }
+                    }
+                }
+            });
+            
+            // Close modals when clicking outside
+            document.querySelectorAll('.modal').forEach(modal => {
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) {
+                        modal.classList.remove('active');
+                    }
+                });
+            });
+        }
+        
+        // Notification
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `notification notification-${type}`;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.animation = 'slideOut 0.3s ease-in';
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+        
+        // Analysis functions
         function setMode(mode) {
             currentMode = mode;
             document.querySelectorAll('.option-btn').forEach(btn => {
@@ -423,18 +926,23 @@
             document.getElementById(view + 'View').classList.add('active');
         }
         
+        function hideResults() {
+            document.getElementById('results').style.display = 'none';
+            document.getElementById('readingTime').style.display = 'none';
+            document.getElementById('keywordSection').style.display = 'none';
+        }
+        
         function analyzeText() {
             const text = document.getElementById('textInput').value.trim();
             
             if (!text) {
-                alert('Please enter some text to analyze');
+                showNotification('Please enter some text to analyze', 'error');
                 return;
             }
             
             // Count statistics
             const words = text.split(/\s+/).filter(w => w.length > 0).length;
             const chars = text.length;
-            const charsNoSpaces = text.replace(/\s/g, '').length;
             const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 0).length;
             const paragraphs = text.split(/\n\n+/).filter(p => p.trim().length > 0).length;
             
@@ -456,51 +964,42 @@
             // Extract and display keyword density
             const keywordData = extractKeywords(text);
             displayKeywordDensity(keywordData, words);
+            
+            // Save analysis for export
+            lastAnalysis = {
+                timestamp: new Date().toISOString(),
+                stats: { words, chars, sentences, paragraphs },
+                readingTime: timeText,
+                keywords: keywordData.keywords,
+                text: text.substring(0, 500) + (text.length > 500 ? '...' : '')
+            };
         }
         
         function extractKeywords(text) {
-            // Clean and tokenize text
             const words = text.toLowerCase()
-                .replace(/[^a-zA-Z\s]/g, ' ')  // Replace non-letters with spaces
-                .split(/\s+/)                 // Split on whitespace
-                .filter(word => {
-                    // Filter conditions:
-                    // 1. Must be at least 3 characters
-                    // 2. Must not be a stop word
-                    // 3. Must contain only letters
-                    return word.length >= 3 && 
-                           !STOP_WORDS.has(word) &&
-                           !STOP_WORDS.has(word.replace(/[^a-z]/g, ''));
-                });
+                .replace(/[^a-zA-Z\s]/g, ' ')
+                .split(/\s+/)
+                .filter(word => word.length >= 3 && !STOP_WORDS.has(word));
             
-            // Count frequency
             const frequency = {};
             words.forEach(word => {
                 frequency[word] = (frequency[word] || 0) + 1;
             });
             
-            // Sort by frequency and get top 10
             const sorted = Object.entries(frequency)
                 .sort((a, b) => b[1] - a[1])
                 .slice(0, 10);
             
-            return {
-                keywords: sorted,
-                totalFilteredWords: words.length
-            };
+            return { keywords: sorted, totalFilteredWords: words.length };
         }
         
         function displayKeywordDensity(data, totalWords) {
             const { keywords } = data;
             
-            // Update total words badge
-            document.getElementById('totalWordsBadge').textContent = 
-                `${totalWords.toLocaleString()} total words`;
+            document.getElementById('totalWordsBadge').textContent = `${totalWords.toLocaleString()} total words`;
             
-            // Get max count for bar scaling
             const maxCount = keywords.length > 0 ? keywords[0][1] : 0;
             
-            // Generate bar chart
             const barsContainer = document.getElementById('keywordBars');
             barsContainer.innerHTML = '';
             
@@ -529,7 +1028,6 @@
                 });
             }
             
-            // Generate list view
             const listContainer = document.getElementById('keywordsList');
             listContainer.innerHTML = '';
             
@@ -545,7 +1043,6 @@
                 });
             }
             
-            // Show the section
             document.getElementById('keywordSection').style.display = 'block';
         }
         
@@ -553,6 +1050,11 @@
         document.getElementById('textInput').addEventListener('paste', () => {
             setTimeout(analyzeText, 100);
         });
+        
+        // Console Easter Egg
+        console.log('%c📝 Word Counter Pro', 'font-size: 24px; font-weight: bold; color: #667eea;');
+        console.log('%cMade with love by Agent-Lumi for @shalkith', 'font-size: 14px; color: #8b5cf6;');
+        console.log('%cPress ? to see keyboard shortcuts!', 'font-style: italic; color: #a1a1aa;');
     </script>
 </body>
 </html>
