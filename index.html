@@ -1075,23 +1075,121 @@ templateSelect.onchange = (e) => {
     if (template) template.apply();
 };
 document.querySelector('.container')?.appendChild(templateSelect);
-</script>
+
+<!-- Keyboard Shortcuts Feature -->
+<div id="shortcutsModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:10000;justify-content:center;align-items:center;">
+    <div style="background:var(--card-bg,white);padding:30px;border-radius:16px;max-width:400px;width:90%;box-shadow:0 20px 40px rgba(0,0,0,0.3);">
+        <h2 style="margin-bottom:20px;color:var(--text-primary);">⌨️ Keyboard Shortcuts</h2>
+        <div style="display:flex;flex-direction:column;gap:12px;color:var(--text-primary);">
+            <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border-color);">
+                <span>Ctrl/⌘ + Enter</span>
+                <kbd style="background:var(--stat-bg);padding:4px 8px;border-radius:4px;font-family:monospace;">Analyze</kbd>
+            </div>
+            <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border-color);">
+                <span>Ctrl/⌘ + A</span>
+                <kbd style="background:var(--stat-bg);padding:4px 8px;border-radius:4px;font-family:monospace;">Select All</kbd>
+            </div>
+            <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border-color);">
+                <span>Ctrl/⌘ + Shift + C</span>
+                <kbd style="background:var(--stat-bg);padding:4px 8px;border-radius:4px;font-family:monospace;">Clear</kbd>
+            </div>
+            <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border-color);">
+                <span>Ctrl/⌘ + S</span>
+                <kbd style="background:var(--stat-bg);padding:4px 8px;border-radius:4px;font-family:monospace;">Export</kbd>
+            </div>
+            <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border-color);">
+                <span>Ctrl/⌘ + T</span>
+                <kbd style="background:var(--stat-bg);padding:4px 8px;border-radius:4px;font-family:monospace;">Toggle Theme</kbd>
+            </div>
+            <div style="display:flex;justify-content:space-between;padding:8px 0;">
+                <span>?</span>
+                <kbd style="background:var(--stat-bg);padding:4px 8px;border-radius:4px;font-family:monospace;">Show Shortcuts</kbd>
+            </div>
+        </div>
+        <button onclick="closeShortcutsModal()" style="margin-top:20px;width:100%;padding:12px;background:var(--accent-color);color:white;border:none;border-radius:8px;cursor:pointer;font-weight:600;">Got it!</button>
+    </div>
+</div>
+
+<button id="helpBtn" onclick="showShortcutsModal()" style="position:fixed;bottom:20px;right:60px;width:45px;height:45px;border-radius:50%;background:var(--accent-color);color:white;border:none;font-size:20px;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,0.3);z-index:1000;transition:transform 0.2s;" title="Keyboard Shortcuts (?)">?</button>
+
 <script>
-// Templates gallery
-const templates = [
-    { name: 'Default', apply: () => {} },
-    { name: 'Minimal', apply: () => document.body.style.fontFamily = 'system-ui, sans-serif' }
-];
-const templateSelect = document.createElement('select');
-templates.forEach(t => {
-    const opt = document.createElement('option');
-    opt.value = t.name;
-    opt.textContent = t.name;
-    templateSelect.appendChild(opt);
+// Keyboard Shortcuts Implementation
+(function() {
+    const textInput = document.getElementById('textInput');
+    
+    document.addEventListener('keydown', function(e) {
+        // Don't trigger shortcuts when typing in textarea (except specific ones)
+        if (document.activeElement === textInput && e.key !== '?' && !(e.ctrlKey || e.metaKey)) {
+            return;
+        }
+        
+        // Show shortcuts: ? key
+        if (e.key === '?' && document.activeElement !== textInput) {
+            e.preventDefault();
+            showShortcutsModal();
+            return;
+        }
+        
+        // Ctrl/Cmd shortcuts
+        if (e.ctrlKey || e.metaKey) {
+            switch(e.key.toLowerCase()) {
+                case 'enter':
+                    e.preventDefault();
+                    analyzeText();
+                    break;
+                case 's':
+                    e.preventDefault();
+                    if (typeof exportResults === 'function') exportResults();
+                    break;
+                case 'a':
+                    e.preventDefault();
+                    textInput.select();
+                    textInput.focus();
+                    break;
+                case 'c':
+                    if (e.shiftKey) {
+                        e.preventDefault();
+                        textInput.value = '';
+                        analyzeText();
+                    }
+                    break;
+                case 't':
+                    e.preventDefault();
+                    if (typeof toggleTheme === 'function') toggleTheme();
+                    break;
+            }
+        }
+        
+        // Escape to close modal
+        if (e.key === 'Escape') {
+            closeShortcutsModal();
+        }
+    });
+})();
+
+function showShortcutsModal() {
+    const modal = document.getElementById('shortcutsModal');
+    if (modal) {
+        modal.style.display = 'flex';
+    }
+}
+
+function closeShortcutsModal() {
+    const modal = document.getElementById('shortcutsModal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+}
+
+// Add escape key handler for modal
+document.addEventListener('DOMContentLoaded', function() {
+    const modal = document.getElementById('shortcutsModal');
+    if (modal) {
+        modal.addEventListener('click', function(e) {
+            if (e.target === this) closeShortcutsModal();
+        });
+    }
 });
-templateSelect.onchange = (e) => {
-    const template = templates.find(t => t.name === e.target.value);
-    if (template) template.apply();
-};
-document.querySelector('.container')?.appendChild(templateSelect);
 </script>
+</body>
+</html>
